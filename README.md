@@ -1,26 +1,31 @@
-# Spin Lab — local iPhone prototype
+# Spin Lab V2 — automatic action review prototype
 
-## Use on iPhone via GitHub Pages
-Open the deployed GitHub Pages URL in Safari, then tap Share → Add to Home Screen for a convenient launcher. The hosted app runs without your Mac. Videos and saved delivery records remain in your browser, and are not uploaded to the repository. Pose model assets require internet. This is a testing prototype with guided ball measurements and single-frame pose analysis, not automatic full-delivery analysis.
+Open https://puneetvrma.github.io/spin-lab/ in your iPhone browser. In Safari, Share → Add to Home Screen adds a convenient launcher. Your Mac is not required for the hosted version.
 
-## Run locally
-1. On your Mac, double-click `Start.command`. Requires Python 3. If macOS blocks the downloaded launcher, open Terminal, type `python3 -m http.server 8765 --bind 0.0.0.0 --directory `, drag the spin-lab folder into Terminal, and press Return.
-2. Keep Mac and iPhone on the same trusted Wi-Fi. Find the Mac's local IP at System Settings → Wi-Fi → Details → TCP/IP.
-3. On your iPhone open `http://MAC-IP:8765` in Safari. Allow the Mac's incoming connection if prompted. Keep the Mac running. Stop the server with Control-C when finished. This server shares this app folder with devices on the same network.
-4. Tap Record a delivery. The iPhone camera opens through a file input; finish recording and choose Use Video. Or import a clip from Photos. This approach does not require the HTTPS live-camera API. iOS controls camera settings; test the capture workflow on your phone.
+## Workflow
+1. Import an original bowling clip (MOV/MP4 supported when the browser supports its codec). Use short 5–20 second clips; maximum scan length is 60 seconds.
+2. Tap Play to check the clip. Manual touch marking is off by default and cannot intercept playback. Dedicated Play/Pause and seek buttons are provided.
+3. Choose bowling arm and camera view, then tap Analyse video. Stay on the page until the scan finishes. No event marking is required.
+4. Read the report and select the generated approach, arm-up and follow-through review frames. The skeleton follows the sampled pose during playback.
+5. Save notes and report in browser storage. Export a backup; Restore history merges a JSON backup into the current history. Keep original clips in Photos.
 
-This is a browser app served from your Mac, not a standalone installed native iOS app. It has no account or paid service. Safari home-screen installation and offline launch are not implemented. Record with the ordinary Camera app whenever convenient and analyse later.
+## What automatic analysis does
+The scan samples the full clip at 12 frames per second, at up to 720 pixels width. MediaPipe Pose Landmarker detects up to three people per sampled frame; a prominence heuristic selects the largest visible body. Tracking can switch people, so always check the skeleton. Tracking coverage is a detection rate, not measurement accuracy or model confidence.
 
-## Useful workflow
-Film short single-delivery clips. Place the phone safely outside the ball's path. Keep the whole body visible from side-on for action review. Move behind the bowler for line and bounce review. Use a fixed tripod, good light and the original real-time clip for timing. Imported slow motion may use an altered timeline; do not calculate speed from that timeline.
+The scanner looks for a visible bowling wrist raised above its shoulder and selects the largest rise relative to torso length. It reports that review phase, its 2D elbow angle, and tracked follow-through frames over the next 1.5 seconds. This heuristic is not confirmed ball release. Shoulder-to-hip angle changes describe image-plane movement, not a balance score. No delivery-quality score, injury judgment or legality assessment is provided. A clip containing multiple deliveries should be trimmed to one delivery.
 
-Pause at release, bounce and finish; mark each event. Enter the actual measured horizontal release-to-bounce distance for estimated average ground speed. Enter measured bounce-to-batter-stumps distance for length. This does not automatically locate the bounce or derive its distance from video.
+## What is not implemented
+Automatic ball tracking, bounce detection, release detection, 3D trajectory, release speed, landing length, turn and spin RPM. This is not a Fulltrack AI equivalent. Body pose alone cannot produce those measurements. The UI marks all ball analytics unavailable.
 
-Pause and tap the visible ball at multiple times to trace its image path. Tapping the bottom video-controls strip is ignored. Scale with a known reference in the same plane as the trace; airborne movement generally does not stay in that plane. The resulting 2D traced distance is only a projected approximation. Image-plane turn uses three ground-path points and is strongly distorted by perspective. From a rear view, use this qualitatively; it is not a validated true turn measurement. No automatic ball tracking, 3D trajectory, release speed or spin RPM.
+Optional manual tools live under a collapsed section. Enable touch marking explicitly to trace visible image points or define an image-plane turn angle. Manual speed uses measured horizontal release-to-bounce distance divided by marked flight time, giving average ground-projected speed rather than release speed. Landing length is a supplied measurement, not a video-derived result. Perspective invalidates image-plane angles as true turn measurements, and exported slow-motion timing can invalidate speed.
 
-The optional paused-frame pose analysis downloads a pinned MediaPipe runtime and model from jsDelivr/Google. Internet is required for loading those assets. Processing occurs locally; the app code does not upload clips. External asset hosts receive normal asset requests. It reports visible 2D joint angles with a visibility threshold, not a coaching score. Whole-action automatic assessment and follow-through scoring are not implemented. Use event markers, video playback and the observation checklist to review those aspects.
+## Privacy and dependencies
+No clip, frame, notes or report is uploaded by the application code. Files are opened through local blob URLs, decoded by the browser and processed in memory. Keyframe images are temporary and are not persisted. History stores report summaries, manual points and notes in localStorage and may be evicted by iOS; export backups regularly. Changing domain/browser changes the storage location.
 
-Save one record per delivery. Notes and measurement data use localStorage in this browser; original videos are not stored. Export JSON regularly. No JSON import/restore is currently provided. Storage is specific to the server address and browser and can be evicted by iOS.
+Internet is required to load the pinned @mediapipe/tasks-vision 0.10.21 runtime/WASM from jsDelivr and the Google-hosted Pose Landmarker Lite model. Those hosts receive ordinary asset requests. There is no service worker/offline guarantee. The older 0.10.22 URL was invalid and has been replaced with a verified existing version.
 
-## Validation status
-Prototype; no physical iPhone or real bowling footage validation has been performed. Camera capture, model compatibility, frame seeking and measurement accuracy require testing on your iPhone. Do not use it to assess bowling legality or as medical advice.
+## Local development
+Run `python3 -m http.server 8765 --bind 127.0.0.1 --directory PATH_TO_APP`, then open http://127.0.0.1:8765. Or use Start.command to allow access from a phone on the same trusted Wi-Fi. Stop the server with Control-C. Browser automatic analysis works locally when its model assets are reachable.
+
+## Verification
+Tested locally with the supplied original IMG_0385.MOV: imported 1584×2816 rotated H.264 video, duration 8.27 seconds; playback started; automatic scan completed 100 samples, generated three review images and a saved report; default overlay pointer events were disabled. Reviewed skeleton placement on the bowler. Pure summary checks cover missing detections, zero-length joints, arm-up selection and follow-through windows. Physical iPhone/browser performance and measurement validity remain unverified. The source video and extracted frames are not committed or published.
