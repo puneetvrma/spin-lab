@@ -1,4 +1,4 @@
-# Spin Lab V2 — automatic action review prototype
+# Spin Lab V3 — automatic action review prototype
 
 Open https://puneetvrma.github.io/spin-lab/ in your iPhone browser. In Safari, Share → Add to Home Screen adds a convenient launcher. Your Mac is not required for the hosted version.
 
@@ -29,3 +29,10 @@ Run `python3 -m http.server 8765 --bind 127.0.0.1 --directory PATH_TO_APP`, then
 
 ## Verification
 Tested locally with the supplied original IMG_0385.MOV: imported 1584×2816 rotated H.264 video, duration 8.27 seconds; playback started; automatic scan completed 100 samples, generated three review images and a saved report; default overlay pointer events were disabled. Reviewed skeleton placement on the bowler. Pure summary checks cover missing detections, zero-length joints, arm-up selection and follow-through windows. Physical iPhone/browser performance and measurement validity remain unverified. The source video and extracted frames are not committed or published.
+
+## V3 phase review
+Six sections now describe run-up rhythm (alternating visible knee-lift peaks), flow (relative joint-motion continuity), back-foot and front-foot placement, knee drive and follow-through. These are experimental descriptive heuristics, not validated biomechanical assessments. Every timestamp can be opened in the video.
+
+Foot placement requires the user to confirm a fixed tripod. A three-frame low-ankle-motion heuristic proposes tentative contact times around the arm-up phase, with conventional same-side back foot and opposite-side front foot assumptions. Ground contact is not established, target-line alignment is not calibrated and the scan only samples 12 fps. Knee drive is only reported for a selected side view and visible hip/knee/ankle. It describes projected knee height and flexion, not force or forward propulsion. Moving-camera, occluded and missing-event cases show explicit unavailable states.
+
+For useful review record separate fixed rear and side views, including the full approach and two seconds after delivery. Do not relabel a rear or moving clip as side-on or fixed to obtain metrics.
